@@ -3,8 +3,9 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 import openai
+from mem0.embeddings.openai import OpenAIEmbedding
 
-# 런타임 패치: NVIDIA NIM 임베딩 모델(nv-embedqa 등)은 'input_type' 파라미터를 필수로 요구합니다.
+# 런타임 패치 1: NVIDIA NIM 임베딩 모델(nv-embedqa 등)은 'input_type' 파라미터를 필수로 요구합니다.
 # mem0가 내부적으로 사용하는 openai 클라이언트를 가로채서 강제로 input_type="query"를 주입합니다.
 original_create = openai.resources.Embeddings.create
 
@@ -15,6 +16,18 @@ def patched_create(self, *args, **kwargs):
     return original_create(self, *args, **kwargs)
 
 openai.resources.Embeddings.create = patched_create
+
+# 런타임 패치 2: mem0 라이브러리는 OpenAI가 아닌 커스텀 모델의 임베딩 차원을 알지 못해 기본값 1536으로 고정해 버립니다.
+# 이로 인해 Qdrant에 1536 차원으로 테이블이 만들어지지만, NIM 모델은 1024 차원을 반환하여 에러가 납니다.
+# 이를 해결하기 위해 OpenAIEmbedding 클래스의 생성자를 패치하여 nvidia 모델일 때 차원을 1024로 강제 지정합니다.
+original_embed_init = OpenAIEmbedding.__init__
+
+def patched_embed_init(self, *args, **kwargs):
+    original_embed_init(self, *args, **kwargs)
+    if self.model == "nvidia/nv-embedqa-e5-v5":
+        self.dimension = 1024
+
+OpenAIEmbedding.__init__ = patched_embed_init
 
 load_dotenv()
 
@@ -38,7 +51,7 @@ def get_memory():
                     "config": {
                         "url": qdrant_url,
                         "api_key": os.getenv("QDRANT_API_KEY"),
-                        "collection_name": "developer_memory_1024",
+                        "collection_name": "developer_memory_1024_v3",
                     }
                 },
                 "llm": {
