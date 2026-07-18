@@ -77,7 +77,7 @@ def get_memory():
 
 @app.get("/")
 def read_root():
-    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다!"}
+    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.1)"}
 
 class ChatRequest(BaseModel):
     user_id: str
