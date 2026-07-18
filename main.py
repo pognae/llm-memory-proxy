@@ -2,6 +2,19 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
+import openai
+
+# 런타임 패치: NVIDIA NIM 임베딩 모델(nv-embedqa 등)은 'input_type' 파라미터를 필수로 요구합니다.
+# mem0가 내부적으로 사용하는 openai 클라이언트를 가로채서 강제로 input_type="query"를 주입합니다.
+original_create = openai.resources.Embeddings.create
+
+def patched_create(self, *args, **kwargs):
+    if "extra_body" not in kwargs or kwargs["extra_body"] is None:
+        kwargs["extra_body"] = {}
+    kwargs["extra_body"]["input_type"] = "query"
+    return original_create(self, *args, **kwargs)
+
+openai.resources.Embeddings.create = patched_create
 
 load_dotenv()
 
