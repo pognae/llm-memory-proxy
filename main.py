@@ -24,8 +24,7 @@ original_embed_init = OpenAIEmbedding.__init__
 
 def patched_embed_init(self, *args, **kwargs):
     original_embed_init(self, *args, **kwargs)
-    if self.model == "nvidia/nv-embedqa-e5-v5":
-        self.dimension = 1024
+    self.dimension = 1024
 
 OpenAIEmbedding.__init__ = patched_embed_init
 
