@@ -1,9 +1,19 @@
+import os
 import sys
+import subprocess
 import pkgutil
+
+# Render 환경에서 requirements.txt가 꼬였거나 빌드가 무시되는 상황을 해결하기 위한 런타임 강제 설치
+try:
+    import google.generativeai
+except ImportError:
+    print("--- [알림] google-generativeai 패키지가 없어 런타임에 강제 설치합니다 ---")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "google-generativeai", "google-api-core"])
+    import google
+    google.__path__ = pkgutil.extend_path(google.__path__, google.__name__)
 
 try:
     import google
-    # Render 등에서 google 모듈 이름 충돌(namespace collision)이 발생할 경우를 위한 런타임 패치
     google.__path__ = pkgutil.extend_path(google.__path__, google.__name__)
 except Exception:
     pass
