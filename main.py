@@ -29,6 +29,20 @@ def get_memory():
                         "api_key": os.getenv("QDRANT_API_KEY"),
                         "collection_name": "developer_memory",
                     }
+                },
+                "llm": {
+                    "provider": "gemini",
+                    "config": {
+                        "model": "gemini-1.5-flash",
+                        "api_key": os.getenv("GEMINI_API_KEY")
+                    }
+                },
+                "embedder": {
+                    "provider": "gemini",
+                    "config": {
+                        "model": "models/embedding-001",
+                        "api_key": os.getenv("GEMINI_API_KEY")
+                    }
                 }
             }
             m = Memory.from_config(config)
