@@ -31,17 +31,19 @@ def get_memory():
                     }
                 },
                 "llm": {
-                    "provider": "gemini",
+                    "provider": "openai",
                     "config": {
                         "model": "gemini-1.5-flash",
-                        "api_key": os.getenv("GEMINI_API_KEY")
+                        "api_key": os.getenv("GEMINI_API_KEY"),
+                        "openai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/"
                     }
                 },
                 "embedder": {
-                    "provider": "gemini",
+                    "provider": "openai",
                     "config": {
-                        "model": "models/embedding-001",
-                        "api_key": os.getenv("GEMINI_API_KEY")
+                        "model": "text-embedding-004",
+                        "api_key": os.getenv("GEMINI_API_KEY"),
+                        "openai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/"
                     }
                 }
             }
