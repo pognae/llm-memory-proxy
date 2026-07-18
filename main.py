@@ -78,7 +78,7 @@ def get_memory():
 
 @app.get("/")
 def read_root():
-    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.2)"}
+    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.3)"}
 
 class ChatRequest(BaseModel):
     user_id: str
@@ -90,8 +90,9 @@ async def chat_with_memory(req: ChatRequest):
     print(f"메시지: {req.message}")
     try:
         mem0_instance = get_memory()
-        relevant_memories = mem0_instance.search(req.message, filters={"user_id": req.user_id})
-        memory_context = "\n".join([mem['memory'] for mem in relevant_memories])
+        search_results = mem0_instance.search(req.message, filters={"user_id": req.user_id})
+        memories_list = search_results.get("results", []) if isinstance(search_results, dict) else search_results
+        memory_context = "\n".join([mem['memory'] for mem in memories_list])
         
         system_prompt = f"""
         당신은 나만을 위한 전담 코딩 어시스턴트입니다.
