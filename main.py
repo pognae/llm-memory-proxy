@@ -1,14 +1,22 @@
+import sys
+import pkgutil
+
+try:
+    import google
+    # Render 등에서 google 모듈 이름 충돌(namespace collision)이 발생할 경우를 위한 런타임 패치
+    google.__path__ = pkgutil.extend_path(google.__path__, google.__name__)
+except Exception:
+    pass
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 
-# .env 명시적 로드 (파일이 없으면 에러가 나도록 절대 경로 사용 권장)
 load_dotenv()
 
 app = FastAPI()
 
-# 1. 서버 시작 시 바로 DB에 붙지 않고 변수만 만들어 둡니다. (지연 로딩)
 m = None
 
 def get_memory():
@@ -16,7 +24,6 @@ def get_memory():
     if m is None:
         try:
             from mem0 import Memory
-            # 환경변수가 제대로 들어왔는지 확인
             qdrant_url = os.getenv("QDRANT_URL")
             if not qdrant_url:
                 raise ValueError("QDRANT_URL이 설정되지 않았습니다. .env 파일을 확인하세요.")
@@ -31,19 +38,17 @@ def get_memory():
                     }
                 },
                 "llm": {
-                    "provider": "openai",
+                    "provider": "gemini",
                     "config": {
                         "model": "gemini-1.5-flash",
-                        "api_key": os.getenv("GEMINI_API_KEY"),
-                        "openai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/"
+                        "api_key": os.getenv("GEMINI_API_KEY")
                     }
                 },
                 "embedder": {
-                    "provider": "openai",
+                    "provider": "gemini",
                     "config": {
-                        "model": "embedding-001",
-                        "api_key": os.getenv("GEMINI_API_KEY"),
-                        "openai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/"
+                        "model": "models/embedding-001",
+                        "api_key": os.getenv("GEMINI_API_KEY")
                     }
                 }
             }
