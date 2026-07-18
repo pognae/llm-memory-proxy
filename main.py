@@ -41,7 +41,7 @@ def get_memory():
                 "embedder": {
                     "provider": "openai",
                     "config": {
-                        "model": "text-embedding-004",
+                        "model": "embedding-001",
                         "api_key": os.getenv("GEMINI_API_KEY"),
                         "openai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/"
                     }
