@@ -38,7 +38,7 @@ def get_memory():
                     "config": {
                         "url": qdrant_url,
                         "api_key": os.getenv("QDRANT_API_KEY"),
-                        "collection_name": "developer_memory",
+                        "collection_name": "developer_memory_1024",
                     }
                 },
                 "llm": {
