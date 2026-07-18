@@ -3,4 +3,3 @@ uvicorn
 mem0ai
 qdrant-client
 python-dotenv
-google-generativeai

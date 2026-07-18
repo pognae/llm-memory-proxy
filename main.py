@@ -1,23 +1,3 @@
-import os
-import sys
-import subprocess
-import pkgutil
-
-# Render 환경에서 requirements.txt가 꼬였거나 빌드가 무시되는 상황을 해결하기 위한 런타임 강제 설치
-try:
-    import google.generativeai
-except ImportError:
-    print("--- [알림] google-generativeai 패키지가 없어 런타임에 강제 설치합니다 ---")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "google-generativeai", "google-api-core"])
-    import google
-    google.__path__ = pkgutil.extend_path(google.__path__, google.__name__)
-
-try:
-    import google
-    google.__path__ = pkgutil.extend_path(google.__path__, google.__name__)
-except Exception:
-    pass
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
@@ -38,6 +18,7 @@ def get_memory():
             if not qdrant_url:
                 raise ValueError("QDRANT_URL이 설정되지 않았습니다. .env 파일을 확인하세요.")
 
+            # NVIDIA NIM을 OpenAI 호환 API 규격으로 사용합니다.
             config = {
                 "vector_store": {
                     "provider": "qdrant",
@@ -48,17 +29,19 @@ def get_memory():
                     }
                 },
                 "llm": {
-                    "provider": "gemini",
+                    "provider": "openai",
                     "config": {
-                        "model": "gemini-1.5-flash",
-                        "api_key": os.getenv("GEMINI_API_KEY")
+                        "model": "meta/llama3-70b-instruct",
+                        "api_key": os.getenv("NVIDIA_API_KEY"),
+                        "openai_base_url": "https://integrate.api.nvidia.com/v1"
                     }
                 },
                 "embedder": {
-                    "provider": "gemini",
+                    "provider": "openai",
                     "config": {
-                        "model": "models/embedding-001",
-                        "api_key": os.getenv("GEMINI_API_KEY")
+                        "model": "nvidia/nv-embedqa-e5-v5",
+                        "api_key": os.getenv("NVIDIA_API_KEY"),
+                        "openai_base_url": "https://integrate.api.nvidia.com/v1"
                     }
                 }
             }
@@ -67,7 +50,6 @@ def get_memory():
             raise RuntimeError(f"메모리 DB 초기화 실패: {str(e)}")
     return m
 
-# 2. 서버가 정상적으로 켜졌는지 확인하기 위한 테스트 엔드포인트
 @app.get("/")
 def read_root():
     return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다!"}
@@ -82,7 +64,6 @@ async def chat_with_memory(req: ChatRequest):
     print(f"메시지: {req.message}")
     try:
         mem0_instance = get_memory()
-        # mem0 최신 버전에 맞게 user_id를 filters를 통해 전달합니다.
         relevant_memories = mem0_instance.search(req.message, filters={"user_id": req.user_id})
         memory_context = "\n".join([mem['memory'] for mem in relevant_memories])
         
@@ -108,5 +89,4 @@ async def chat_with_memory(req: ChatRequest):
     except Exception as e:
         print(f"--- [에러 발생] ---")
         print(str(e))
-        # 어디서 에러가 났는지 브라우저에 표시해줍니다.
         raise HTTPException(status_code=500, detail=str(e))
