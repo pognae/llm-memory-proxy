@@ -50,7 +50,8 @@ def get_memory():
                     "config": {
                         "url": qdrant_url,
                         "api_key": os.getenv("QDRANT_API_KEY"),
-                        "collection_name": "developer_memory_1024_v3",
+                        "collection_name": "developer_memory_1024_v4",
+                        "embedding_model_dims": 1024,
                     }
                 },
                 "llm": {
@@ -77,7 +78,7 @@ def get_memory():
 
 @app.get("/")
 def read_root():
-    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.1)"}
+    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.2)"}
 
 class ChatRequest(BaseModel):
     user_id: str
