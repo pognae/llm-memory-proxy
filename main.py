@@ -57,7 +57,7 @@ def get_memory():
                 "llm": {
                     "provider": "openai",
                     "config": {
-                        "model": "meta/llama3-70b-instruct",
+                        "model": "meta/llama-3.1-70b-instruct",
                         "api_key": os.getenv("NVIDIA_API_KEY"),
                         "openai_base_url": "https://integrate.api.nvidia.com/v1"
                     }
@@ -78,7 +78,7 @@ def get_memory():
 
 @app.get("/")
 def read_root():
-    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.3)"}
+    return {"status": "Memory Proxy 서버가 정상적으로 실행 중입니다! (v3.4)"}
 
 class ChatRequest(BaseModel):
     user_id: str
